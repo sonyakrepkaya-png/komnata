@@ -40,7 +40,10 @@ body {
   position: relative;
   width: 100%;
   height: 100vh;
-  overflow: hidden;
+  /* по бокам лишнее обрезаем, а снизу свечение голов
+     мягко уходит дальше, на экран с дверью, и не обрывается */
+  overflow-x: clip;
+  overflow-y: visible;
 }
 
 /* слои с фигурами: каждый svg во всю сцену, координаты = px макета */
@@ -198,14 +201,259 @@ body {
   transform: none !important;
 }
 
-/* ВРЕМЕННО: место для следующей главы */
-.placeholder {
+/* ============================================================
+   ГЛАВЫ (Детство и следующие)
+   ============================================================ */
+
+:root {
+  --light: #ffefba; /* светлые линии и текст глав */
+}
+
+.chapter {
+  position: relative;
   height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fae2ae;
+  overflow: hidden;
+  color: var(--light);
+}
+
+/* ---------- линия этапов слева ---------- */
+
+.side_title {
+  position: absolute;
+  left: 3.542cqw;
+  top: 2.708cqw;
+  width: 5.833cqw;
   font-family: "Alice", serif;
-  font-size: 24px;
-  opacity: 0.5;
+  font-size: 1.111cqw;
+  line-height: 1.15;
+  text-align: right;
+}
+
+.nav_link {
+  position: absolute;
+  left: 1.736cqw;
+  width: 7.222cqw;
+  font-family: "Alice", serif;
+  font-size: 1.111cqw;
+  line-height: 1.15;
+  color: var(--light);
+  text-decoration: none;
+  transition: text-shadow 0.3s ease;
+}
+
+.nav_link:hover {
+  text-shadow: 0 0 0.6cqw rgba(255, 239, 186, 0.7);
+}
+
+/* светящийся кружок текущего этапа */
+.nav_dot {
+  position: absolute;
+  left: 10.417cqw;
+  width: 0.972cqw;
+  height: 0.903cqw;
+  margin: -0.451cqw 0 0 -0.486cqw;
+  border-radius: 50%;
+  background: var(--light);
+  box-shadow:
+    0 0 0.1cqw var(--light),
+    0 0 0.6cqw var(--light),
+    0 0 1.2cqw rgba(255, 239, 186, 0.8),
+    0 0 2.4cqw rgba(255, 239, 186, 0.5);
+}
+
+/* ---------- заголовок и цитата ---------- */
+
+.chapter_title {
+  position: absolute;
+  left: 15.556cqw;
+  top: 2.153cqw;
+  font-family: "Alice", serif;
+  font-weight: 400;
+  font-size: 4.444cqw;
+  line-height: 1.15;
+  color: #feeeb8;
+}
+
+.chapter_quote {
+  position: absolute;
+  left: 61.528cqw;
+  top: 3.958cqw;
+  width: 31.389cqw;
+  font-family: "Inter", sans-serif;
+  font-size: 1.111cqw;
+  line-height: 1.21;
+  color: #ffecb6;
+}
+
+.chapter_hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 53.75cqw;
+  font-family: "Nunito", sans-serif;
+  font-size: 1.111cqw;
+  text-align: center;
+  opacity: 0.7;
+}
+
+/* ---------- предметы ---------- */
+
+.item {
+  position: absolute;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--light);
+  text-align: left;
+  /* свечение при наведении: плавно появляется */
+  filter: drop-shadow(0 0 0 rgba(255, 239, 186, 0));
+  transition: filter 0.4s ease;
+}
+
+.item svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.item_label {
+  position: absolute;
+  font-family: "Nunito", sans-serif;
+  font-size: 1.111cqw;
+  line-height: 1.36;
+  transition: text-shadow 0.4s ease;
+}
+
+/* наведение (и выбор с клавиатуры): предмет загорается */
+.item:hover,
+.item:focus-visible {
+  outline: none;
+  filter: drop-shadow(0 0 0.25cqw rgba(255, 239, 186, 0.9))
+    drop-shadow(0 0 1.1cqw rgba(255, 239, 186, 0.45));
+}
+
+.item:hover .item_label,
+.item:focus-visible .item_label {
+  text-shadow: 0 0 0.7cqw rgba(255, 239, 186, 0.8);
+}
+
+/* ---------- затемнение комнаты и карточка ---------- */
+
+.room_dim {
+  position: absolute;
+  inset: -50vmax;
+  background: rgba(20, 2, 1, 0.55);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.4s ease,
+    visibility 0s linear 0.4s;
+  z-index: 5;
+}
+
+.card {
+  position: absolute;
+  z-index: 6;
+  width: 27.986cqw;
+  min-height: 11.181cqw;
+  padding: 1.389cqw 4.444cqw 1.528cqw 9.653cqw;
+  background: #3e0703;
+  border: 0.07cqw solid var(--light);
+  box-shadow:
+    0 0 0.4cqw rgba(255, 239, 186, 0.8),
+    0 0 2cqw rgba(255, 239, 186, 0.35),
+    0 0 6cqw rgba(255, 239, 186, 0.15);
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(0.96);
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s ease,
+    visibility 0s linear 0.35s;
+}
+
+.chapter.is_card_open .room_dim,
+.chapter.is_card_open .card {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s ease,
+    visibility 0s linear 0s;
+}
+
+.chapter.is_card_open .card {
+  transform: scale(1);
+}
+
+/* иконка в карточке светится */
+.card_icon {
+  position: absolute;
+  left: 1.806cqw;
+  top: 1.528cqw;
+  width: 6.042cqw;
+  height: 5cqw;
+  overflow: visible;
+  filter: drop-shadow(0 0 0.15cqw var(--light))
+    drop-shadow(0 0 0.8cqw rgba(255, 239, 186, 0.8))
+    drop-shadow(0 0 2cqw rgba(255, 239, 186, 0.4));
+}
+
+.card_title {
+  font-family: "Nunito", sans-serif;
+  font-weight: 400;
+  font-size: 1.111cqw;
+  line-height: 1.36;
+  color: var(--light);
+  text-shadow:
+    0 0 0.36cqw var(--light),
+    0 0 1.4cqw rgba(255, 239, 186, 0.6);
+}
+
+.card_text {
+  margin-top: 0.6cqw;
+  font-family: "Nunito", sans-serif;
+  font-size: 1.111cqw;
+  line-height: 1.36;
+  color: #ffecb6;
+}
+
+/* кнопка закрытия: квадрат с чертой */
+.card_close {
+  position: absolute;
+  right: 0.556cqw;
+  top: 0.556cqw;
+  width: 1.875cqw;
+  height: 1.875cqw;
+  padding: 0;
+  border: 0.07cqw solid var(--light);
+  background: none;
+  cursor: pointer;
+  transition: box-shadow 0.3s ease;
+}
+
+.card_close::before {
+  content: "";
+  position: absolute;
+  left: 0.278cqw;
+  right: 0.278cqw;
+  top: 50%;
+  height: 0.07cqw;
+  background: var(--light);
+}
+
+.card_close:hover,
+.card_close:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0.6cqw rgba(255, 239, 186, 0.8);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item,
+  .card,
+  .room_dim {
+    transition: none;
+  }
 }

@@ -299,25 +299,66 @@
     canvas.getContext("2d").putImageData(out, 0, 0);
   }
 
-  // перед измерением снимаем с групп анимацию уменьшения,
-  // чтобы фигуры стояли точно на своих местах
-  function drawAll() {
-    document.body.classList.add("is_measuring");
-    document.querySelectorAll("canvas.glow").forEach(drawGlow);
-    void document.body.offsetWidth;
-    document.body.classList.remove("is_measuring");
+  // Одинаковые свечения (например, у всех дверей) считаем один раз,
+  // а на остальные холсты просто копируем готовую картинку.
+  // Такие холсты отмечены одинаковым data-same="...".
+  function drawOrCopy(canvas, done) {
+    const key = canvas.dataset.same;
+    const ready = key && done[key];
+    if (ready && ready.clientWidth === canvas.clientWidth && ready.clientHeight === canvas.clientHeight) {
+      canvas.width = ready.width;
+      canvas.height = ready.height;
+      canvas.getContext("2d").drawImage(ready, 0, 0);
+      return;
+    }
+    drawGlow(canvas);
+    if (key) done[key] = canvas;
   }
 
-  // при загрузке (когда загрузились и шрифты): рисуем свечение
-  // и запускаем появление обложки
+  // Перед измерением снимаем анимации уменьшения и приближения,
+  // чтобы фигуры стояли точно на своих местах.
+  // cls — какой класс для этого добавить на время измерения.
+  function drawSome(canvases, cls) {
+    const done = {};
+    document.body.classList.add(cls);
+    canvases.forEach(function (c) {
+      drawOrCopy(c, done);
+    });
+    void document.body.offsetWidth;
+    document.body.classList.remove(cls);
+  }
+
+  function coverCanvases() {
+    return Array.from(document.querySelectorAll(".cover canvas.glow"));
+  }
+
+  function otherCanvases() {
+    return Array.from(document.querySelectorAll("canvas.glow")).filter(
+      function (c) {
+        return !c.closest(".cover");
+      },
+    );
+  }
+
+  function drawAll() {
+    drawSome(coverCanvases(), "is_measuring");
+    drawSome(otherCanvases(), "is_measuring_doors");
+  }
+
+  // При загрузке (когда загрузились и шрифты):
+  // 1) сразу считаем свечение обложки и показываем головы;
+  // 2) остальное (двери) досчитываем чуть позже, пока головы
+  //    проявляются, — так первый экран появляется быстрее.
   window.addEventListener("load", function () {
     const fontsReady = document.fonts ? document.fonts.ready : Promise.resolve();
     fontsReady.then(function () {
-      drawAll();
-      // небольшая пауза, чтобы браузер запомнил начальное состояние
+      drawSome(coverCanvases(), "is_measuring");
       requestAnimationFrame(function () {
         requestAnimationFrame(function () {
           document.body.classList.add("is_ready");
+          setTimeout(function () {
+            drawSome(otherCanvases(), "is_measuring_doors");
+          }, 100);
         });
       });
     });

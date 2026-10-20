@@ -196,8 +196,24 @@ body {
   pointer-events: none;
 }
 
+/* глава после двери стоит поверх последнего экрана двери.
+   когда дверь прокручена до конца (door.js ставит is_open),
+   свет за полсекунды гаснет, а комната на его месте проявляется.
+   так комната появляется сразу на своём месте, а не выезжает снизу */
+.door_sticky {
+  transition: opacity 0.7s ease;
+}
+
+.door.is_open .door_sticky {
+  opacity: 0;
+}
+
+.door + .chapter {
+  margin-top: -100vh;
+}
+
 /* пока glow.js измеряет фигуры, приближение выключено */
-.is_measuring .door_zoom {
+.is_measuring_doors .door_zoom {
   transform: none !important;
 }
 
@@ -209,11 +225,35 @@ body {
   --light: #ffefba; /* светлые линии и текст глав */
 }
 
+/* Глава — это «место» на странице высотой 2 экрана, а сама
+   комната закреплена на экране (position: fixed) и никогда не
+   прокручивается: она плавно проявляется, когда прокрутка дошла
+   до её места, и плавно гаснет, когда ушла дальше или назад.
+   Поэтому и вперёд, и назад комната появляется «из двери»,
+   а не выезжает. Когда показывать комнату, решает door.js */
 .chapter {
   position: relative;
-  height: 100vh;
-  overflow: hidden;
+  height: 200vh;
   color: var(--light);
+}
+
+.chapter_sticky {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.7s ease,
+    visibility 0s linear 0.7s;
+}
+
+.chapter.is_shown .chapter_sticky {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 0.7s ease,
+    visibility 0s linear 0s;
 }
 
 /* ---------- линия этапов слева ---------- */
@@ -456,4 +496,26 @@ body {
   .room_dim {
     transition: none;
   }
+}
+
+/* короткая цитата «Подросткового периода»: Nunito SemiBold, справа */
+.chapter_quote_short {
+  left: 75.764cqw;
+  top: 5.278cqw;
+  width: auto;
+  font-family: "Nunito", sans-serif;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--light);
+}
+
+/* цитата «Взросления»: Nunito SemiBold, две строки справа */
+.chapter_quote_long {
+  left: 61.042cqw;
+  top: 4.444cqw;
+  width: 31.319cqw;
+  font-family: "Nunito", sans-serif;
+  font-weight: 600;
+  line-height: 1.36;
+  color: var(--light);
 }

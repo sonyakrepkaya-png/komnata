@@ -8,7 +8,11 @@
 //   0.35 – 0.60   в проёме загорается тёплый свет
 //   0.50 – 0.90   приближаемся к проёму (в 8 раз),
 //   0.72 – 0.90   и свет из него заливает весь экран
-//   0.88 – 1.00   свет мягко гаснет — мы внутри следующей главы
+//   0.90 – 1.00   экран залит светом
+//   1.00          дошли до конца: свет за полсекунды гаснет, и на его
+//                 месте проявляется комната следующей главы. Она уже
+//                 стоит на своём месте и не выезжает снизу
+//                 (см. style.css: .door.is_open и .door + .chapter)
 //
 // Сильное приближение (в десятки раз) заставляет браузер
 // перерисовывать огромные картинки, и прокрутка назад начинала
@@ -44,6 +48,13 @@
         gap: section.querySelector(".door_gap_shape"),
         glowGap: section.querySelector(".door_glow_gap"),
         flash: section.querySelector(".door_flash"),
+        // глава сразу после двери — она проявляется в конце
+        next:
+          section.nextElementSibling &&
+          section.nextElementSibling.classList.contains("chapter")
+            ? section.nextElementSibling
+            : null,
+        open: false,
         current: 0,
         drawn: -1, // какое состояние уже нарисовано
       };
@@ -89,11 +100,93 @@
     // когда свет закрыл весь экран, дверь можно не рисовать
     d.zoom.style.visibility = f > 0.999 ? "hidden" : "";
 
-    // 4. свет гаснет
-    d.sticky.style.opacity = 1 - ease(part(p, 0.88, 1));
+    // 4. дошли до конца — свет гаснет, комната проявляется.
+    //    это делается по времени (плавный переход в style.css),
+    //    а не прокруткой, поэтому комната не сдвигается
+    const open = p > 0.995;
+    if (open !== d.open) {
+      d.open = open;
+      d.section.classList.toggle("is_open", open);
+      // комната проявилась — держим ещё секунду, чтобы её разглядеть
+      if (open && d.next && holding()) holdUntil = performance.now() + HOLD_MS;
+    }
+  }
+
+  // ---------- остановка в комнате ----------
+  //
+  // Когда дверь открылась и проявилась комната, прокрутка на
+  // HOLD_MS миллисекунд замирает ровно на комнате. Так даже очень
+  // быстрый скролл (или инерция тачпада) не проносит мимо неё.
+  // Если человек уже улетел далеко (например, перетащил полосу
+  // прокрутки), не возвращаем его назад.
+
+  const HOLD_MS = 1200;
+  let holdUntil = 0;
+  let holdY = 0;
+
+  function holdAt(chapter) {
+    const top = chapter.getBoundingClientRect().top;
+    if (Math.abs(top) > window.innerHeight * 1.2) return;
+    holdY = window.scrollY + top;
+    // держим, пока дверь доигрывает и комната проявляется
+    holdUntil = performance.now() + HOLD_MS * 2;
+    window.scrollTo(0, holdY);
+  }
+
+  function holding() {
+    return performance.now() < holdUntil;
+  }
+
+  // пока держим — колёсико, пальцы и клавиши прокрутки не работают
+  function block(e) {
+    if (holding()) e.preventDefault();
+  }
+  window.addEventListener("wheel", block, { passive: false });
+  window.addEventListener("touchmove", block, { passive: false });
+  window.addEventListener("keydown", function (e) {
+    const keys = [" ", "PageDown", "PageUp", "ArrowDown", "ArrowUp", "End", "Home"];
+    if (holding() && keys.indexOf(e.key) !== -1) e.preventDefault();
+  });
+
+  // ---------- какую комнату показывать ----------
+  //
+  // Комната закреплена на экране и видна, только пока прокрутка
+  // стоит на её «месте» (секция главы целиком закрывает экран,
+  // с небольшим запасом). Ушли дальше или назад — она гаснет,
+  // а на её месте уже дверь.
+  const chapters = Array.from(document.querySelectorAll(".chapter"));
+
+  function updateChapters() {
+    const vh = window.innerHeight;
+    chapters.forEach(function (ch) {
+      const r = ch.getBoundingClientRect();
+      const shown = r.top <= vh * 0.01 && r.bottom >= vh * 0.99;
+      if (shown !== ch._shown) {
+        ch._shown = shown;
+        ch.classList.toggle("is_shown", shown);
+        // ушли из комнаты — карточку закрываем
+        if (!shown) ch.classList.remove("is_card_open");
+      }
+    });
   }
 
   function frame() {
+    updateChapters();
+
+    // долистали дверь до конца прокруткой вниз — сразу встаём на
+    // комнату; дверь доигрывает анимацию, пока страница стоит
+    doors.forEach(function (d) {
+      const t = targetProgress(d);
+      if (d.next && d.lastTarget !== undefined && d.lastTarget < 0.995 && t >= 0.995) {
+        holdAt(d.next);
+      }
+      d.lastTarget = t;
+    });
+
+    // если инерция всё-таки сдвинула страницу — возвращаем на место
+    if (holding() && Math.abs(window.scrollY - holdY) > 1) {
+      window.scrollTo(0, holdY);
+    }
     doors.forEach(function (d) {
       const target = targetProgress(d);
       d.current += (target - d.current) * SMOOTH;

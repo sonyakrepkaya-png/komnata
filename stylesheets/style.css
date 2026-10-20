@@ -1,0 +1,211 @@
+/* ============================================================
+   ОБЩЕЕ
+   ============================================================ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #3e0703; /* фон сайта (бордовый из макета) */
+  --cream: #fae2ae; /* светлый цвет голов */
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--bg);
+  overflow-x: hidden;
+}
+
+/* Сцена — это экран из Figma (1440 × 820), который целиком
+   уменьшается или увеличивается под окно браузера.
+   Внутри сцены размеры в cqw: 1cqw = 1% ширины сцены = 14.4px макета. */
+.stage {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(100vw, 175.61vh);
+  aspect-ratio: 1440 / 820;
+  transform: translate(-50%, -50%);
+  container-type: inline-size;
+}
+
+/* ============================================================
+   ЭКРАН 1: ОБЛОЖКА
+   ============================================================ */
+
+.cover {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* слои с фигурами: каждый svg во всю сцену, координаты = px макета */
+.layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* холсты со свечением: шире сцены, чтобы свет не обрезался по краю */
+.glow {
+  position: absolute;
+  left: -20cqw;
+  top: -20cqw;
+  width: 140cqw;
+  height: calc(100% + 40cqw);
+  pointer-events: none;
+}
+
+/* группа = голова со всем, что внутри неё */
+.cover_group {
+  position: absolute;
+  inset: 0;
+}
+
+/* ---------- появление голов при загрузке ----------
+   сначала головы спрятаны и чуть уменьшены; когда страница
+   загрузилась, glow.js добавляет body класс is_ready,
+   и головы плавно проявляются: сначала левая, потом правая */
+
+.cover_group {
+  opacity: 0;
+  transform: scale(0.96);
+  transition:
+    opacity 1.8s ease,
+    transform 2.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.cover_group_left {
+  transform-origin: 25% 50%;
+}
+
+.cover_group_right {
+  transform-origin: 72% 48%;
+  transition-delay: 0.5s;
+}
+
+/* пока glow.js измеряет фигуры, уменьшение выключено,
+   иначе свечение посчиталось бы не на своём месте */
+.is_measuring .cover_group {
+  transform: none;
+  transition: none;
+}
+
+.is_ready .cover_group {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* если в настройках системы выключена анимация — сразу показываем */
+@media (prefers-reduced-motion: reduce) {
+  .cover_group {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* заголовок: шрифт Alice 64px, по центру правой головы */
+.cover_title {
+  font-family: "Alice", serif;
+  font-weight: 400;
+  font-size: 4.444cqw;
+  line-height: 1.14;
+  color: var(--bg);
+  text-align: center;
+}
+
+.cover_line {
+  position: absolute;
+  left: 57.917cqw;
+  width: 28.333cqw;
+  white-space: nowrap;
+}
+
+.cover_line1 {
+  top: 12.569cqw;
+}
+
+.cover_line2 {
+  top: 20.972cqw;
+}
+
+.cover_line3 {
+  top: 30.139cqw;
+}
+
+.cover_line4 {
+  top: 39.306cqw;
+}
+
+/* ============================================================
+   ПЕРЕХОД: ДВЕРЬ
+   Секция в 3.5 экрана высотой: пока её прокручиваешь, экран
+   с дверью стоит на месте, а door.js двигает анимацию.
+   Чем выше секция, тем медленнее открывается дверь.
+   ============================================================ */
+
+.door {
+  position: relative;
+  height: 350vh;
+}
+
+.door_sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* слой, который приближается: центр — в проёме двери */
+.door_zoom {
+  position: absolute;
+  inset: 0;
+  transform-origin: 55.03% 47.6%;
+  will-change: transform;
+}
+
+/* линии рисуются: 1 — линии нет, 0 — линия целиком */
+.door_lines path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+/* в начале свет и свечение выключены */
+.door_gap_shape,
+.door_glow_gap,
+.door_glow_lines {
+  opacity: 0;
+}
+
+/* свет, заливающий экран, когда мы подошли к проёму */
+.door_flash {
+  position: absolute;
+  inset: 0;
+  background: #ffefba;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* пока glow.js измеряет фигуры, приближение выключено */
+.is_measuring .door_zoom {
+  transform: none !important;
+}
+
+/* ВРЕМЕННО: место для следующей главы */
+.placeholder {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fae2ae;
+  font-family: "Alice", serif;
+  font-size: 24px;
+  opacity: 0.5;
+}

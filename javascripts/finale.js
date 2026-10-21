@@ -3,11 +3,10 @@
 //
 // progress — насколько прокручена секция финала (0…1):
 //   0.00 – 0.25   экран «Комната меняется. Мы — тоже.» стоит
-//   0.25 – 1.00   камера плавно опускается на экран с авторами,
-//                 а мебель падает сквозь светящийся пол, немного
-//                 кружится и разлетается по местам из макета
-//                 (куда — записано в data-dx / data-dy у предмета,
-//                 насколько крутится — в data-spin)
+//   0.25 – 1.00   мебель немного падает вниз, чуть покачиваясь,
+//                 и растворяется в светящемся полу (насколько падает —
+//                 data-dy у предмета, насколько качается — data-spin),
+//                 а камера опускается к полоске с авторами (273 px)
 // ============================================================
 
 (function () {
@@ -18,6 +17,7 @@
   const world = section.querySelector(".finale_world");
   const stage = section.querySelector(".stage");
   const items = Array.from(section.querySelectorAll(".fall_item"));
+  const floor = section.querySelector(".finale_floor");
   let current = 0;
   let drawn = -1;
 
@@ -43,7 +43,10 @@
   function render(p) {
     const k = stage.clientWidth / 1440; // px экрана в 1 px макета
     const cam = ease(part(p, 0.25, 1));
-    world.style.transform = "translateY(" + -820 * cam * k + "px)";
+    world.style.transform = "translateY(" + -273 * cam * k + "px)";
+    // свет пола гаснет вместе с мебелью: полоска с авторами
+    // остаётся спокойной, тёмной, как в макете
+    if (floor) floor.style.opacity = 1 - 0.85 * cam;
 
     items.forEach(function (item, i) {
       // предметы падают чуть вразнобой
@@ -54,6 +57,8 @@
       const spin = parseFloat(item.dataset.spin) * Math.sin(t * Math.PI);
       item.style.transform =
         "translate(" + dx + "px, " + dy + "px) rotate(" + spin + "deg)";
+      // к концу падения предмет растворяется в свете
+      item.style.opacity = 1 - part(t, 0.45, 1);
     });
   }
 

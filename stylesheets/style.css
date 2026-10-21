@@ -569,7 +569,7 @@ body {
    ============================================================ */
 
 .finale {
-  height: 350vh;
+  height: 250vh;
 }
 
 /* «мир» финала: два экрана друг под другом, камера едет вниз */
@@ -593,6 +593,7 @@ body {
 
 .finale_text {
   position: absolute;
+  text-align: center;
   left: 5.625cqw;
   top: 21.111cqw;
   width: 88.75cqw;
@@ -605,8 +606,8 @@ body {
 
 .finale_credits {
   position: absolute;
-  left: 3.056cqw;
-  top: 104.931cqw; /* 820 + 691 px макета: второй экран */
+  left: 3.681cqw;
+  top: 62.986cqw; /* 820 + 87 px макета: полоска с авторами под финалом */
   font-family: "Alice", serif;
   font-size: 1.111cqw;
   line-height: 1.15;

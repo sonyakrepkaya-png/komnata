@@ -1332,3 +1332,13 @@ html.has_room_cursor * {
     animation: none;
   }
 }
+
+/* карточка, которую подняли, чтобы она не вылезала за экран,
+   плавно едет вверх */
+.chapter.is_card_open .card.is_lifted {
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s ease,
+    top 0.5s ease,
+    visibility 0s linear 0s;
+}

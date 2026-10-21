@@ -274,6 +274,8 @@
     card.classList.remove("has_secret", "is_secret_open");
     card._secret = secret;
     if (secret) card.classList.add("has_secret");
+    card.classList.remove("is_lifted");
+    fitCard(card);
 
     // иконка-кнопка и искорка-подсказка создаются один раз
     if (!card._secretReady) {
@@ -293,6 +295,7 @@
         p.className = "card_secret";
         p.textContent = s.text;
         card.querySelector(".card_text").after(p);
+        fitCard(card);
         burst(card, icon, s.glyph);
         // иконка ещё раз делает своё движение
         const anim = icon.dataset.anim;
@@ -302,6 +305,22 @@
       });
     }
   });
+
+  // карточка не должна вылезать ниже комнаты: если после текста
+  // секрета она стала длиннее, плавно поднимаем её вверх
+  const ROOM_BOTTOM = 740; // нижняя стена комнаты, px макета
+  const ROOM_TOP = 130; // верхняя стена комнаты, px макета
+  function fitCard(card) {
+    const stage = card.parentElement;
+    const k = stage.clientWidth / 1440; // px экрана в 1 px макета
+    const top = card.offsetTop / k;
+    const h = card.offsetHeight / k;
+    if (top + h > ROOM_BOTTOM) {
+      const newTop = Math.max(ROOM_TOP, ROOM_BOTTOM - h);
+      card.classList.add("is_lifted");
+      card.style.top = newTop / 14.4 + "cqw";
+    }
+  }
 
   // из иконки вылетают значки и гаснут
   function burst(card, icon, glyph) {

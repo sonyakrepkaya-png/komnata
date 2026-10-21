@@ -48,6 +48,7 @@
         gap: section.querySelector(".door_gap_shape"),
         glowGap: section.querySelector(".door_glow_gap"),
         flash: section.querySelector(".door_flash"),
+        extras: section.querySelector(".door_extras"),
         // глава сразу после двери — она проявляется в конце
         next:
           section.nextElementSibling &&
@@ -80,6 +81,10 @@
       // кончик линии виден точкой
       path.style.opacity = t > 0.001 ? 1 : 0;
     });
+    // украшения двери (наклейки, табличка, ключи, отметки роста)
+    // проявляются, когда сама дверь почти нарисована
+    if (d.extras) d.extras.style.opacity = ease(part(p, 0.28, 0.45));
+
     // свечение разгорается, когда дверь почти нарисована
     d.glowLines.style.opacity = ease(part(p, 0.22, 0.45));
 

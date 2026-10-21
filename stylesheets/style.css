@@ -116,6 +116,44 @@ body {
   }
 }
 
+/* ---------- заголовок печатается по буквам (typing.js) ---------- */
+
+/* буква, которую ещё не «напечатали» */
+.type_char {
+  opacity: 0;
+}
+
+.type_char.is_on {
+  opacity: 1;
+}
+
+/* мигающий курсор после последней напечатанной буквы */
+.type_caret {
+  display: inline-block;
+  width: 0.06em;
+  height: 0.9em;
+  margin-left: 0.04em;
+  vertical-align: -0.08em;
+  background: var(--bg);
+  animation: caretBlink 0.9s steps(1) infinite;
+}
+
+@keyframes caretBlink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* тёмное свечение вокруг строк — когда заголовок допечатан */
+.cover_title_glow {
+  opacity: 0;
+  transition: opacity 1.4s ease;
+}
+
+.cover.is_typed .cover_title_glow {
+  opacity: 1;
+}
+
 /* заголовок: шрифт Alice 64px, по центру правой головы */
 .cover_title {
   font-family: "Alice", serif;
@@ -182,7 +220,8 @@ body {
   stroke-dashoffset: 1;
 }
 
-/* в начале свет и свечение выключены */
+/* в начале свет, свечение и украшения двери выключены */
+.door_extras,
 .door_gap_shape,
 .door_glow_gap,
 .door_glow_lines {

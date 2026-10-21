@@ -756,3 +756,173 @@ body {
     width: 31cqw;
   }
 }
+
+
+/* ============================================================
+   ЖИВЫЕ ИКОНКИ
+   У каждого предмета своё движение. Наведение — один раз,
+   в открытой карточке — по кругу, с паузами.
+   Какое движение у какого предмета — в chapter.js (ANIM)
+   ============================================================ */
+
+.item_icon,
+.card_icon,
+.item_ghost {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+.item:hover .item_icon[data-anim="blink"],
+.card_icon[data-anim="blink"] { animation: liveBlink 1.6s ease-in-out; }
+.item:hover .item_icon[data-anim="wiggle"],
+.card_icon[data-anim="wiggle"] { animation: liveWiggle 1.4s ease-in-out; }
+.item:hover .item_icon[data-anim="flicker"],
+.card_icon[data-anim="flicker"] { animation: liveFlicker 1.6s linear; }
+.item:hover .item_icon[data-anim="squish"],
+.card_icon[data-anim="squish"] { animation: liveSquish 1.2s ease-in-out; }
+.item:hover .item_icon[data-anim="breathe"],
+.card_icon[data-anim="breathe"] { animation: liveBreathe 2.4s ease-in-out; }
+.item:hover .item_icon[data-anim="tumble"],
+.card_icon[data-anim="tumble"] { animation: liveTumble 1.4s ease-in-out; }
+.item:hover .item_icon[data-anim="rock"],
+.card_icon[data-anim="rock"] { animation: liveRock 1.8s ease-in-out; transform-origin: 50% 90%; }
+.item:hover .item_icon[data-anim="beat"],
+.card_icon[data-anim="beat"] { animation: liveBeat 1.2s ease-in-out; transform-origin: 50% 50%; }
+.item:hover .item_icon[data-anim="roll"],
+.card_icon[data-anim="roll"] { animation: liveRoll 1.8s ease-in-out; }
+.item:hover .item_icon[data-anim="grow"],
+.card_icon[data-anim="grow"] { animation: liveGrow 1.8s ease-in-out; }
+
+/* в открытой карточке движение повторяется */
+.chapter.is_card_open .card_icon {
+  animation-iteration-count: infinite;
+}
+
+@keyframes liveBlink {
+  0%, 100% { opacity: 1; }
+  20% { opacity: 0.45; }
+  30% { opacity: 1; }
+  45% { opacity: 0.6; }
+  55% { opacity: 1; }
+}
+
+@keyframes liveWiggle {
+  0%, 100% { transform: rotate(0); }
+  20% { transform: rotate(-7deg); }
+  45% { transform: rotate(6deg); }
+  70% { transform: rotate(-3deg); }
+}
+
+@keyframes liveFlicker {
+  0%, 100% { opacity: 1; }
+  10% { opacity: 0.5; }
+  14% { opacity: 1; }
+  30% { opacity: 0.7; }
+  34% { opacity: 1; }
+}
+
+@keyframes liveSquish {
+  0%, 100% { transform: scale(1, 1); }
+  30% { transform: scale(1.06, 0.9); }
+  55% { transform: scale(0.97, 1.04); }
+  75% { transform: scale(1.01, 0.99); }
+}
+
+@keyframes liveBreathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+
+/* башня кубиков пошатнулась и устояла */
+@keyframes liveTumble {
+  0%, 100% { transform: rotate(0) translateY(0); }
+  15% { transform: rotate(-9deg) translateY(-2%); }
+  35% { transform: rotate(7deg); }
+  55% { transform: rotate(-4deg) translateY(1%); }
+  75% { transform: rotate(2deg); }
+}
+
+@keyframes liveRock {
+  0%, 100% { transform: rotate(0); }
+  25% { transform: rotate(-10deg); }
+  75% { transform: rotate(10deg); }
+}
+
+@keyframes liveBeat {
+  0%, 40%, 100% { transform: scale(1); }
+  10% { transform: scale(1.12); }
+  20% { transform: scale(1); }
+  30% { transform: scale(1.08); }
+}
+
+@keyframes liveRoll {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  30% { transform: translateX(-10%) rotate(-3deg); }
+  70% { transform: translateX(10%) rotate(3deg); }
+}
+
+@keyframes liveGrow {
+  0%, 100% { transform: scale(1, 1) rotate(0); }
+  35% { transform: scale(1.03, 1.1) rotate(-3deg); }
+  70% { transform: scale(1, 1.02) rotate(2deg); }
+}
+
+/* ============================================================
+   КОМНАТА ПЕРЕСТРАИВАЕТСЯ
+   старый предмет гаснет, новый проявляется и вспыхивает
+   (запускает chapter.js классом is_morph)
+   ============================================================ */
+
+.item_ghost,
+.item_ghost_label {
+  pointer-events: none;
+}
+
+.is_morph .item_ghost,
+.is_morph .item_ghost_label {
+  animation: morphOut 1s ease 0.6s both;
+}
+
+.is_morph .item_icon,
+.is_morph .item_label:not(.item_ghost_label) {
+  animation: morphIn 1.1s ease 1.3s both;
+}
+
+/* новое в комнате несколько раз мягко вспыхивает */
+.item.is_morph {
+  animation: morphGlow 1.2s ease-in-out 2.2s 2 both;
+}
+
+@keyframes morphOut {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(-4%) scale(0.92); }
+}
+
+@keyframes morphIn {
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes morphGlow {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(255, 239, 186, 0)); }
+  50% {
+    filter: drop-shadow(0 0 0.3cqw rgba(255, 239, 186, 0.95))
+      drop-shadow(0 0 1.4cqw rgba(255, 239, 186, 0.5));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item_icon,
+  .card_icon,
+  .is_morph .item_ghost,
+  .is_morph .item_ghost_label,
+  .is_morph .item_icon,
+  .is_morph .item_label,
+  .item.is_morph {
+    animation: none !important;
+  }
+  .item_ghost,
+  .item_ghost_label {
+    display: none;
+  }
+}

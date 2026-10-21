@@ -159,6 +159,7 @@
   // Светящийся кружок слева: когда появляется новая комната, он
   // медленно едет по линии от этапа, где был, к этапу этой комнаты.
   let lastDotTop = null;
+  let lastShownChapter = null;
 
   function slideDot(ch) {
     const dot = ch.querySelector(".nav_dot");
@@ -183,7 +184,16 @@
       if (shown !== ch._shown) {
         ch._shown = shown;
         ch.classList.toggle("is_shown", shown);
-        if (shown) slideDot(ch);
+        if (shown) {
+          slideDot(ch);
+          // сообщаем chapter.js, из какой комнаты мы пришли
+          window.dispatchEvent(
+            new CustomEvent("room-shown", {
+              detail: { chapter: ch, from: lastShownChapter },
+            }),
+          );
+          lastShownChapter = ch;
+        }
         // ушли из комнаты — карточку закрываем
         if (!shown) ch.classList.remove("is_card_open");
       }

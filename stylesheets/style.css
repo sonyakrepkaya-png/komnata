@@ -551,3 +551,95 @@ body {
   filter: drop-shadow(0 0 0.25cqw rgba(255, 239, 186, 0.9))
     drop-shadow(0 0 1.1cqw rgba(255, 239, 186, 0.45));
 }
+
+/* ============================================================
+   ФИНАЛ И АВТОРЫ
+   Секция высокая: сначала экран «Комната меняется» стоит,
+   потом камера опускается на экран с авторами, а мебель
+   падает сквозь светящийся пол (двигает finale.js)
+   ============================================================ */
+
+.finale {
+  height: 350vh;
+}
+
+/* «мир» финала: два экрана друг под другом, камера едет вниз */
+.finale_world {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+
+.finale_title {
+  position: absolute;
+  left: 14.167cqw;
+  top: 3.333cqw;
+  font-family: "Alice", serif;
+  font-weight: 400;
+  font-size: 4.444cqw;
+  line-height: 1.15;
+  color: var(--light);
+  white-space: nowrap;
+}
+
+.finale_text {
+  position: absolute;
+  left: 5.625cqw;
+  top: 21.111cqw;
+  width: 88.75cqw;
+  font-family: "Nunito", sans-serif;
+  font-weight: 600;
+  font-size: 1.389cqw;
+  line-height: 1.36;
+  color: var(--light);
+}
+
+.finale_credits {
+  position: absolute;
+  left: 3.056cqw;
+  top: 104.931cqw; /* 820 + 691 px макета: второй экран */
+  font-family: "Alice", serif;
+  font-size: 1.111cqw;
+  line-height: 1.15;
+  color: var(--light);
+}
+
+/* пол и падающая мебель: картинка и её свечение вместе */
+.finale_floor,
+.fall_item {
+  position: absolute;
+  pointer-events: none;
+}
+
+.fall_item {
+  will-change: transform;
+}
+
+.finale_floor svg,
+.fall_item svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* от пола остаётся только рассеянное свечение, без самой фигуры */
+.finale_floor svg {
+  opacity: 0;
+}
+
+/* свечение, которое двигается вместе со своей картинкой */
+.glow_local {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* пока glow.js измеряет фигуры, падение и камера на месте */
+.is_measuring_doors .finale_world,
+.is_measuring_doors .fall_item {
+  transform: none !important;
+}

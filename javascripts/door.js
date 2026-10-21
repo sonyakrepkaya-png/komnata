@@ -156,6 +156,25 @@
   // а на её месте уже дверь.
   const chapters = Array.from(document.querySelectorAll(".chapter"));
 
+  // Светящийся кружок слева: когда появляется новая комната, он
+  // медленно едет по линии от этапа, где был, к этапу этой комнаты.
+  let lastDotTop = null;
+
+  function slideDot(ch) {
+    const dot = ch.querySelector(".nav_dot");
+    if (!dot) return;
+    if (!dot.dataset.top) dot.dataset.top = dot.style.top;
+    const own = dot.dataset.top;
+    if (lastDotTop && lastDotTop !== own) {
+      dot.style.transition = "none";
+      dot.style.top = lastDotTop;
+      void dot.offsetWidth;
+      dot.style.transition = "top 1.6s cubic-bezier(0.45, 0, 0.2, 1) 0.3s";
+      dot.style.top = own;
+    }
+    lastDotTop = own;
+  }
+
   function updateChapters() {
     const vh = window.innerHeight;
     chapters.forEach(function (ch) {
@@ -164,6 +183,7 @@
       if (shown !== ch._shown) {
         ch._shown = shown;
         ch.classList.toggle("is_shown", shown);
+        if (shown) slideDot(ch);
         // ушли из комнаты — карточку закрываем
         if (!shown) ch.classList.remove("is_card_open");
       }
@@ -177,7 +197,7 @@
     // комнату; дверь доигрывает анимацию, пока страница стоит
     doors.forEach(function (d) {
       const t = targetProgress(d);
-      if (d.next && d.lastTarget !== undefined && d.lastTarget < 0.995 && t >= 0.995) {
+      if (!window.navScrolling && d.next && d.lastTarget !== undefined && d.lastTarget < 0.995 && t >= 0.995) {
         holdAt(d.next);
       }
       d.lastTarget = t;
@@ -206,6 +226,15 @@
       d.current = targetProgress(d);
     });
   }
+
+  // nav.js после мгновенного прыжка просит двери сразу встать
+  // в нужное положение, без «отматывания» анимации
+  window.addEventListener("doors-snap", function () {
+    doors.forEach(function (d) {
+      d.current = targetProgress(d);
+      d.lastTarget = d.current;
+    });
+  });
 
   requestAnimationFrame(frame);
 })();

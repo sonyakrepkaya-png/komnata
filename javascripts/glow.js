@@ -333,7 +333,7 @@
   }
 
   function otherCanvases() {
-    return Array.from(document.querySelectorAll("canvas.glow")).filter(
+    return Array.from(document.querySelectorAll("canvas.glow, canvas.glow_local")).filter(
       function (c) {
         return !c.closest(".cover");
       },

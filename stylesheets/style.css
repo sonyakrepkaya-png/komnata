@@ -519,7 +519,11 @@ body {
 /* цитата «Взросления»: Nunito SemiBold, две строки справа */
 .chapter_quote_long {
   left: 61.042cqw;
-  top: 4.444cqw;
+  /* низ текста всегда на 12px макета выше стены комнаты:
+     если строк станет больше (например, на телефоне), текст
+     растёт вверх, а не налезает на стену */
+  top: auto;
+  bottom: 49.097cqw;
   width: 31.319cqw;
   font-family: "Nunito", sans-serif;
   font-weight: 600;

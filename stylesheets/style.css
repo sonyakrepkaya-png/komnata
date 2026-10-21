@@ -360,8 +360,13 @@ body {
   overflow: visible;
 }
 
+/* подпись предмета прижата к правому верхнему углу рамки
+   с одинаковым отступом 20px макета; --w — ширина из макета,
+   по которой подпись переносится на новую строку */
 .item_label {
   position: absolute;
+  right: 1.667cqw;
+  max-width: var(--w);
   font-family: "Nunito", sans-serif;
   font-size: 1.111cqw;
   line-height: 1.36;
@@ -713,12 +718,17 @@ body {
 /* телефон, повёрнутый горизонтально: весь сайт уменьшается целиком,
    поэтому самые мелкие подписи немного увеличиваем, чтобы читались */
 @media (orientation: landscape) and (max-height: 520px) {
-  .item_label,
   .card_title,
   .card_text,
   .chapter_hint,
   .next_label {
     font-size: 1.45cqw;
+  }
+
+  /* подписи предметов крупнее, но остаются внутри рамок */
+  .item_label {
+    font-size: 1.35cqw;
+    max-width: calc(var(--w) * 1.25);
   }
 
   /* этапы слева — чуть меньше, чтобы не наезжали на линию */
@@ -727,9 +737,13 @@ body {
     font-size: 1.3cqw;
   }
 
-  .chapter_quote,
   .finale_credits {
     font-size: 1.4cqw;
+  }
+
+  /* цитаты сверху только чуть крупнее, чтобы не залезали на стену */
+  .chapter_quote {
+    font-size: 1.2cqw;
   }
 
   .card {

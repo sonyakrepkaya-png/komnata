@@ -965,3 +965,90 @@ body {
     display: none;
   }
 }
+
+/* ============================================================
+   ЖИВЫЕ КОМНАТЫ (room_fx.js)
+   ============================================================ */
+
+/* пылинки в воздухе: холст во всю сцену, под всем остальным */
+.dust {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* ---------- подростковая комната в темноте ----------
+   тёмная пелена над комнатой с «дыркой» света вокруг курсора.
+   --x и --y — где сейчас фонарик (двигает room_fx.js).
+   заголовок, цитата и линия этапов слева остаются видны */
+.teen_dark {
+  position: absolute;
+  inset: -20cqw;
+  z-index: 4;
+  pointer-events: none;
+  --x: 50%;
+  --y: 50%;
+  background: radial-gradient(
+    circle 22cqw at var(--x) var(--y),
+    rgba(30, 3, 1, 0) 0%,
+    rgba(30, 3, 1, 0) 30%,
+    rgba(30, 3, 1, 0.55) 60%,
+    rgba(30, 3, 1, 0.94) 100%
+  );
+}
+
+/* заголовок, цитата и линия этапов слева — поверх темноты */
+#teen .stage > svg.layer:not(.room_walls),
+#teen .nav_dot,
+#teen .side_title,
+#teen .nav_link,
+#teen .chapter_title,
+#teen .chapter_quote {
+  z-index: 5;
+}
+
+/* подсказка видна поверх темноты */
+#teen .chapter_hint {
+  z-index: 5;
+  opacity: 0.85;
+}
+
+/* ---------- звёздочки ночника в детской ---------- */
+.night_stars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.night_star {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--light);
+  box-shadow:
+    0 0 0.3cqw rgba(255, 239, 186, 0.9),
+    0 0 0.9cqw rgba(255, 239, 186, 0.4);
+  opacity: 0.15;
+  transform: scale(0.6);
+  animation: starTwinkle 3s ease-in-out infinite;
+}
+
+@keyframes starTwinkle {
+  0%,
+  100% {
+    opacity: 0.12;
+    transform: scale(0.6);
+  }
+  50% {
+    opacity: 0.75;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .night_star {
+    animation: none;
+    opacity: 0.4;
+  }
+}

@@ -1052,3 +1052,283 @@ body {
     opacity: 0.4;
   }
 }
+
+/* ---------- секреты в предметах ----------
+   у предмета с секретом иконка в карточке нажимается,
+   а рядом мерцает искорка-подсказка */
+.card_spark {
+  position: absolute;
+  left: 7.4cqw;
+  top: 1.1cqw;
+  font-size: 0.9cqw;
+  line-height: 1;
+  color: var(--light);
+  text-shadow: 0 0 0.5cqw var(--light);
+  pointer-events: none;
+  display: none;
+  animation: sparkPulse 1.8s ease-in-out infinite;
+}
+
+.card.has_secret .card_spark {
+  display: block;
+}
+
+.card.is_secret_open .card_spark {
+  display: none;
+}
+
+.card.has_secret .card_icon {
+  cursor: pointer;
+}
+
+@keyframes sparkPulse {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.7) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15) rotate(20deg);
+  }
+}
+
+/* текст секрета проявляется под основным */
+.card_secret {
+  margin-top: 0.6cqw;
+  font-family: "Nunito", sans-serif;
+  font-style: italic;
+  font-size: 1.111cqw;
+  line-height: 1.36;
+  color: var(--light);
+  text-shadow: 0 0 0.6cqw rgba(255, 239, 186, 0.55);
+  animation: secretIn 0.9s ease both;
+}
+
+@keyframes secretIn {
+  from {
+    opacity: 0;
+    transform: translateY(0.4cqw);
+    filter: blur(0.2cqw);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+/* значки, которые вылетают из иконки */
+.card_burst {
+  position: absolute;
+  z-index: 2;
+  line-height: 1;
+  color: var(--light);
+  text-shadow:
+    0 0 0.3cqw var(--light),
+    0 0 1cqw rgba(255, 239, 186, 0.7);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  animation: burstOut 1.7s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+@keyframes burstOut {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.3);
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy)))
+      rotate(var(--rot)) scale(1);
+  }
+}
+
+/* кубики рассыпаются и собираются обратно:
+   верхний кубик качается, падает вправо на пол и катится,
+   нижние вздрагивают; потом всё медленно встаёт на место.
+   двигаются только кубики — рамка и подпись стоят */
+.cube {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+.item.is_crash .cube_top {
+  animation: cubeTopFall 3s ease-in-out;
+}
+
+.item.is_crash .cube_left {
+  animation: cubeLeftJolt 3s ease-in-out;
+  transform-origin: 30% 100%;
+}
+
+.item.is_crash .cube_right {
+  animation: cubeRightJolt 3s ease-in-out;
+}
+
+/* пока кубики падают, обычное «живое» движение не мешает */
+.item.is_crash .item_icon {
+  animation: none !important;
+}
+
+@keyframes cubeTopFall {
+  0% { transform: none; }
+  8% { transform: rotate(-6deg); }
+  16% { transform: rotate(7deg); }
+  24% { transform: rotate(-4deg); }
+  /* срывается вправо и падает на пол */
+  36% { transform: translate(9px, 2px) rotate(40deg); }
+  46% { transform: translate(24px, 14px) rotate(90deg); }
+  /* подпрыгивает и откатывается */
+  52% { transform: translate(28px, 11px) rotate(100deg); }
+  58% { transform: translate(31px, 14px) rotate(90deg); }
+  72% { transform: translate(31px, 14px) rotate(90deg); opacity: 1; }
+  /* исчезает и появляется сверху на месте */
+  80% { transform: translate(31px, 14px) rotate(90deg); opacity: 0; }
+  81% { transform: translateY(-10px); opacity: 0; }
+  92% { transform: translateY(1px); opacity: 1; }
+  100% { transform: none; }
+}
+
+@keyframes cubeLeftJolt {
+  0%, 30% { transform: none; }
+  36% { transform: translateX(-1.5px) rotate(-6deg); }
+  42% { transform: rotate(3deg); }
+  48%, 100% { transform: none; }
+}
+
+@keyframes cubeRightJolt {
+  0%, 34% { transform: none; }
+  40% { transform: translateX(2px) rotate(8deg); }
+  47% { transform: rotate(-3deg); }
+  54% { transform: translateX(1px); }
+  60%, 100% { transform: none; }
+}
+
+/* ---------- тёплая семейная комната ----------
+   мягкий общий свет и тёплое сияние со стороны двери «дальше» */
+.family_warm {
+  position: absolute;
+  /* слой шире сцены, чтобы свет не обрезался ровной линией
+     по краю сцены, а мягко уходил за край экрана */
+  inset: -20cqw;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      ellipse 34cqw 26cqw at 72cqw 51.3cqw,
+      rgba(255, 176, 92, 0.16) 0%,
+      rgba(255, 176, 92, 0.06) 55%,
+      rgba(255, 176, 92, 0) 100%
+    ),
+    radial-gradient(
+      circle 22cqw at 26.5cqw 71cqw,
+      rgba(255, 196, 120, 0.22) 0%,
+      rgba(255, 196, 120, 0.15) 20%,
+      rgba(255, 196, 120, 0.07) 45%,
+      rgba(255, 196, 120, 0.02) 75%,
+      rgba(255, 196, 120, 0) 100%
+    );
+  animation: warmBreath 7s ease-in-out infinite;
+}
+
+@keyframes warmBreath {
+  0%,
+  100% {
+    opacity: 0.75;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* рамки предметов светятся чуть сильнее, тёплым светом */
+#family .item {
+  filter: drop-shadow(0 0 0.2cqw rgba(255, 210, 150, 0.45))
+    drop-shadow(0 0 0.9cqw rgba(255, 190, 120, 0.18));
+}
+
+#family .item:hover,
+#family .item:focus-visible {
+  filter: drop-shadow(0 0 0.25cqw rgba(255, 225, 170, 0.95))
+    drop-shadow(0 0 1.3cqw rgba(255, 190, 120, 0.55));
+}
+
+#family .chapter_title {
+  text-shadow:
+    0 0 0.5cqw rgba(255, 220, 160, 0.55),
+    0 0 2cqw rgba(255, 180, 100, 0.3);
+}
+
+/* ---------- свой курсор в каждой комнате ---------- */
+.room_cursor {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1000;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.room_cursor.is_on {
+  opacity: 1;
+}
+
+.room_cursor svg {
+  position: absolute;
+  left: -11px;
+  top: -11px;
+  width: 22px;
+  height: 22px;
+  overflow: visible;
+  fill: none;
+  stroke: #ffefba;
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 2px #ffefba) drop-shadow(0 0 6px rgba(255, 239, 186, 0.6));
+  transition: transform 0.25s ease;
+}
+
+.room_cursor .fill {
+  fill: #ffefba;
+  stroke: none;
+}
+
+.room_cursor[data-kind="childhood"] svg,
+.room_cursor[data-kind="family"] svg {
+  fill: rgba(255, 239, 186, 0.25);
+}
+
+.room_cursor[data-kind="family"] svg {
+  stroke: #ffd9a0;
+  filter: drop-shadow(0 0 2px #ffd9a0) drop-shadow(0 0 7px rgba(255, 190, 120, 0.7));
+}
+
+/* над тем, что можно нажать, — чуть больше */
+.room_cursor.is_hot svg {
+  transform: scale(1.45);
+}
+
+.room_cursor[data-kind="childhood"].is_hot svg {
+  transform: scale(1.45) rotate(36deg);
+}
+
+/* обычную стрелку прячем, пока виден свой курсор */
+html.has_room_cursor,
+html.has_room_cursor * {
+  cursor: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card_spark,
+  .family_warm,
+  .item.is_crash .cube {
+    animation: none;
+  }
+}

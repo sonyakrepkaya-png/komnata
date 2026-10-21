@@ -84,6 +84,12 @@
       chapter.classList.add("is_card_open");
       openedFrom = item;
       closeBtn.focus({ preventScroll: true });
+      // room_fx.js по этому событию прячет в карточку секрет
+      window.dispatchEvent(
+        new CustomEvent("card-open", {
+          detail: { chapter: chapter, item: item, card: card },
+        }),
+      );
     }
 
     function close() {

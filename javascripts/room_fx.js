@@ -8,6 +8,11 @@
 //  3) Подростковая комната в темноте: свет только вокруг
 //     курсора (или пальца), как фонарик под одеялом.
 //  4) В детской на стенах мерцают звёздочки от ночника.
+//  5) Секреты: в каждой комнате один предмет что-то прячет.
+//     В его карточке иконка мерцает искоркой — нажмите на неё.
+//     А кубики в детской рассыпаются, если «потрясти» над ними мышкой.
+//  6) В семейной комнате теплее: мягкий свет, будто от двери.
+//  7) У каждой комнаты свой курсор (только с мышкой).
 //
 // Комнату, которая сейчас на экране, сообщает door.js
 // событием "room-shown".
@@ -116,9 +121,10 @@
       const y = p.y * c.height;
       const r = p.r * k;
       const g = ctx.createRadialGradient(x, y, 0, x, y, r * 4);
-      g.addColorStop(0, "rgba(255, 239, 186, " + p.a * flick + ")");
-      g.addColorStop(0.35, "rgba(255, 239, 186, " + p.a * flick * 0.35 + ")");
-      g.addColorStop(1, "rgba(255, 239, 186, 0)");
+      const col = d.color || "255, 239, 186";
+      g.addColorStop(0, "rgba(" + col + ", " + p.a * flick + ")");
+      g.addColorStop(0.35, "rgba(" + col + ", " + p.a * flick * 0.35 + ")");
+      g.addColorStop(1, "rgba(" + col + ", 0)");
       ctx.fillStyle = g;
       ctx.beginPath();
       ctx.arc(x, y, r * 4, 0, Math.PI * 2);
@@ -218,6 +224,239 @@
     const room = child.querySelector(".room");
     stage.insertBefore(sky, room);
   }
+
+
+  // ---------------------------------------------------------
+  // 5) СЕКРЕТЫ В ПРЕДМЕТАХ
+  //
+  // комната → предмет → что он прячет. glyph — чем «брызгает»
+  // иконка, когда секрет открыли (︎ — чтобы ♥ и ♪ не
+  // превращались на телефоне в цветные смайлики)
+  // ---------------------------------------------------------
+
+  const SECRETS = {
+    childhood: {
+      "Кровать": {
+        glyph: "✦",
+        text: "Секрет из-под кровати: фонарик, фантик от конфеты и записка «никому не показывать».",
+      },
+    },
+    teen: {
+      "Наушники": {
+        glyph: "♪︎",
+        text: "В наушниках — одна и та же песня на повторе. Сорок раз подряд, и всё равно мало.",
+      },
+    },
+    adult: {
+      "Цветочек": {
+        glyph: "✿︎",
+        text: "Его поливали чаще, чем звонили домой. Он выжил — и это уже маленькая победа.",
+      },
+    },
+    family: {
+      "Мишка": {
+        glyph: "♥︎",
+        text: "Тот самый мишка из детства. Теперь его обнимает кто-то совсем маленький.",
+      },
+    },
+  };
+
+  window.addEventListener("card-open", function (e) {
+    const card = e.detail.card;
+    const item = e.detail.item;
+    const label = item.querySelector(".item_label").textContent.trim();
+    const room = SECRETS[e.detail.chapter.id] || {};
+    const secret = room[label] || null;
+
+    // убираем секрет от прошлой карточки
+    const oldText = card.querySelector(".card_secret");
+    if (oldText) oldText.remove();
+    card.classList.remove("has_secret", "is_secret_open");
+    card._secret = secret;
+    if (secret) card.classList.add("has_secret");
+
+    // иконка-кнопка и искорка-подсказка создаются один раз
+    if (!card._secretReady) {
+      card._secretReady = true;
+      const spark = document.createElement("span");
+      spark.className = "card_spark";
+      spark.setAttribute("aria-hidden", "true");
+      spark.textContent = "✦";
+      card.appendChild(spark);
+
+      const icon = card.querySelector(".card_icon");
+      icon.addEventListener("click", function () {
+        const s = card._secret;
+        if (!s || card.classList.contains("is_secret_open")) return;
+        card.classList.add("is_secret_open");
+        const p = document.createElement("p");
+        p.className = "card_secret";
+        p.textContent = s.text;
+        card.querySelector(".card_text").after(p);
+        burst(card, icon, s.glyph);
+        // иконка ещё раз делает своё движение
+        const anim = icon.dataset.anim;
+        icon.dataset.anim = "";
+        void icon.getBoundingClientRect();
+        icon.dataset.anim = anim;
+      });
+    }
+  });
+
+  // из иконки вылетают значки и гаснут
+  function burst(card, icon, glyph) {
+    if (reduce) return;
+    const cr = card.getBoundingClientRect();
+    const ir = icon.getBoundingClientRect();
+    const k = cr.width / 403; // px экрана в 1 px макета (ширина карточки)
+    const x0 = ir.left - cr.left + ir.width / 2;
+    const y0 = ir.top - cr.top + ir.height / 2;
+    for (let i = 0; i < 12; i++) {
+      const b = document.createElement("span");
+      b.className = "card_burst";
+      b.textContent = glyph;
+      const ang = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 1.4;
+      const dist = (50 + Math.random() * 80) * k;
+      b.style.left = x0 + "px";
+      b.style.top = y0 + "px";
+      b.style.setProperty("--dx", (Math.cos(ang) * dist).toFixed(1) + "px");
+      b.style.setProperty("--dy", (Math.sin(ang) * dist).toFixed(1) + "px");
+      b.style.setProperty("--rot", ((Math.random() - 0.5) * 80).toFixed(0) + "deg");
+      b.style.fontSize = ((10 + Math.random() * 10) * k).toFixed(1) + "px";
+      b.style.animationDelay = (Math.random() * 0.25).toFixed(2) + "s";
+      card.appendChild(b);
+      setTimeout(function () {
+        b.remove();
+      }, 2200);
+    }
+  }
+
+  // кубики в детской рассыпаются, если быстро водить над ними мышкой
+  // туда-сюда («потрясти»): считаем, сколько раз мышь сменила
+  // направление за последнюю секунду
+  if (child) {
+    child.querySelectorAll(".item").forEach(function (item) {
+      if (item.querySelector(".item_label").textContent.trim() !== "Кубики") return;
+      let lastX = null;
+      let dir = 0;
+      let turns = [];
+      item.addEventListener("mousemove", function (e) {
+        if (lastX !== null) {
+          const dx = e.clientX - lastX;
+          if (Math.abs(dx) > 2) {
+            const d = dx > 0 ? 1 : -1;
+            if (dir && d !== dir) turns.push(performance.now());
+            dir = d;
+          }
+        }
+        lastX = e.clientX;
+        const now = performance.now();
+        turns = turns.filter(function (t) {
+          return now - t < 1000;
+        });
+        if (turns.length >= 5 && !item.classList.contains("is_crash")) {
+          turns = [];
+          item.classList.add("is_crash");
+          setTimeout(function () {
+            item.classList.remove("is_crash");
+          }, 3100);
+        }
+      });
+      item.addEventListener("mouseleave", function () {
+        lastX = null;
+        dir = 0;
+      });
+    });
+  }
+
+  // ---------------------------------------------------------
+  // 6) ТЁПЛАЯ СЕМЕЙНАЯ КОМНАТА
+  // ---------------------------------------------------------
+
+  const family = document.getElementById("family");
+  if (family) {
+    const stage = family.querySelector(".stage");
+    const warm = document.createElement("div");
+    warm.className = "family_warm";
+    warm.setAttribute("aria-hidden", "true");
+    stage.insertBefore(warm, family.querySelector(".room"));
+    // пылинки тут тёплые, золотисто-оранжевые
+    if (family._dust) family._dust.color = "255, 206, 140";
+  }
+
+  // ---------------------------------------------------------
+  // 7) СВОЙ КУРСОР В КАЖДОЙ КОМНАТЕ
+  //
+  // детство — звёздочка, подростки — маленькое кольцо (там и так
+  // фонарик), взросление — аккуратный кружок с точкой,
+  // семья — сердечко. Только там, где есть мышка.
+  // ---------------------------------------------------------
+
+  const CURSORS = {
+    childhood:
+      '<path d="M12 1.5l2.6 6.6 7 .5-5.4 4.5 1.7 6.9L12 16.2 6.1 20l1.7-6.9L2.4 8.6l7-.5z"/>',
+    teen: '<circle cx="12" cy="12" r="5.5"/>',
+    adult: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="1.6" class="fill"/>',
+    family:
+      '<path d="M12 20.5s-8-4.9-8-10.6A4.4 4.4 0 0 1 12 7.3a4.4 4.4 0 0 1 8 2.6c0 5.7-8 10.6-8 10.6z"/>',
+  };
+
+  const fine = window.matchMedia("(hover: hover) and (pointer: fine)");
+  const cursor = document.createElement("div");
+  cursor.className = "room_cursor";
+  cursor.setAttribute("aria-hidden", "true");
+  cursor.innerHTML = '<svg viewBox="0 0 24 24"></svg>';
+  document.body.appendChild(cursor);
+  const cursorSvg = cursor.querySelector("svg");
+
+  let mx = -100;
+  let my = -100;
+  let px = mx;
+  let py = my;
+  let kind = "";
+  let seen = false; // мышь уже двигалась по странице
+
+  window.addEventListener("mousemove", function (e) {
+    mx = e.clientX;
+    my = e.clientY;
+    if (!seen) {
+      seen = true;
+      px = mx;
+      py = my;
+    }
+    // над тем, что можно нажать, курсор становится больше
+    const hot = e.target.closest && e.target.closest("a, button");
+    cursor.classList.toggle("is_hot", !!hot);
+  });
+  document.addEventListener("mouseleave", function () {
+    seen = false;
+    cursor.classList.remove("is_on");
+  });
+
+  (function cursorLoop() {
+    const room =
+      fine.matches && seen && active && active.classList.contains("is_shown")
+        ? active.id
+        : "";
+    const want = CURSORS[room] ? room : "";
+    if (want !== kind) {
+      kind = want;
+      if (kind) {
+        cursorSvg.innerHTML = CURSORS[kind];
+        cursor.dataset.kind = kind;
+      }
+      cursor.classList.toggle("is_on", !!kind);
+      document.documentElement.classList.toggle("has_room_cursor", !!kind);
+    }
+    if (kind) {
+      // мягко догоняет мышь, но почти без отставания
+      px += (mx - px) * (reduce ? 1 : 0.45);
+      py += (my - py) * (reduce ? 1 : 0.45);
+      cursor.style.transform =
+        "translate(" + px.toFixed(1) + "px, " + py.toFixed(1) + "px)";
+    }
+    requestAnimationFrame(cursorLoop);
+  })();
 
   // ---------------------------------------------------------
   // какая комната сейчас на экране

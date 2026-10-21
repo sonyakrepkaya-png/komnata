@@ -643,3 +643,96 @@ body {
 .is_measuring_doors .fall_item {
   transform: none !important;
 }
+
+/* ============================================================
+   ТЕЛЕФОН И ПЛАНШЕТ
+   ============================================================ */
+
+/* экран «переверните телефон»: по умолчанию спрятан */
+.rotate {
+  display: none;
+}
+
+/* телефон или планшет держат вертикально — показываем только его */
+@media (orientation: portrait) and (max-width: 1100px) {
+  .rotate {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8vw;
+    padding: 0 8vw;
+    background: var(--bg);
+    color: var(--light);
+    text-align: center;
+  }
+
+  .rotate_arrows {
+    width: 70vw;
+    max-width: 420px;
+    overflow: visible;
+    filter: drop-shadow(0 0 4px rgba(255, 239, 186, 0.8))
+      drop-shadow(0 0 18px rgba(255, 239, 186, 0.35));
+    animation: rotateHint 3s ease-in-out infinite;
+  }
+
+  .rotate_text {
+    max-width: 22em;
+    font-family: "Alice", serif;
+    font-size: clamp(16px, 4.6vw, 26px);
+    line-height: 1.3;
+  }
+
+  /* сайт под экраном не прокручивается */
+  html,
+  body {
+    overflow: hidden;
+  }
+}
+
+/* стрелки слегка покачиваются, подсказывая повернуть */
+@keyframes rotateHint {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-12deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rotate_arrows {
+    animation: none;
+  }
+}
+
+/* телефон, повёрнутый горизонтально: весь сайт уменьшается целиком,
+   поэтому самые мелкие подписи немного увеличиваем, чтобы читались */
+@media (orientation: landscape) and (max-height: 520px) {
+  .item_label,
+  .card_title,
+  .card_text,
+  .chapter_hint,
+  .next_label {
+    font-size: 1.45cqw;
+  }
+
+  /* этапы слева — чуть меньше, чтобы не наезжали на линию */
+  .nav_link,
+  .side_title {
+    font-size: 1.3cqw;
+  }
+
+  .chapter_quote,
+  .finale_credits {
+    font-size: 1.4cqw;
+  }
+
+  .card {
+    width: 31cqw;
+  }
+}

@@ -16,6 +16,15 @@
     <link href="./stylesheets/style.css" rel="stylesheet" />
   </head>
   <body>
+    <!-- ЭКРАН «ПЕРЕВЕРНИТЕ ТЕЛЕФОН»: виден только на телефоне
+         и планшете, которые держат вертикально -->
+    <div class="rotate" aria-live="polite">
+      <svg class="rotate_arrows" viewBox="455 277 530 267" aria-hidden="true">
+        <path d="M465.099 391.542C485.493 245.486 954.562 245.486 974.956 391.542M980.055 359.201L974.956 391.542L949.463 370.677M974.956 429.1C954.562 575.156 485.493 575.156 465.099 429.1M460 461.441L465.099 429.1L490.591 449.965" fill="none" stroke="#FFEFBA" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+      <p class="rotate_text">Для просмотра рекомендуется перевернуть телефон</p>
+    </div>
+
     <!-- ЭКРАН 1: обложка.
          Свечение рисует glow.js на холстах (canvas) с классом glow:
          data-for — какие фигуры светятся, data-color — цвет свечения.

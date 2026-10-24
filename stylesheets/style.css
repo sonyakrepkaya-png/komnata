@@ -442,6 +442,11 @@ body {
 .card {
   position: absolute;
   z-index: 6;
+  /* карточка всегда открывается по центру экрана, как модальное окно.
+     как она вылетает из предмета и улетает обратно — в chapter.js */
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
   width: 27.986cqw;
   min-height: 11.181cqw;
   padding: 1.389cqw 4.444cqw 1.528cqw 9.653cqw;
@@ -453,25 +458,33 @@ body {
     0 0 6cqw rgba(255, 239, 186, 0.15);
   opacity: 0;
   visibility: hidden;
-  transform: scale(0.96);
-  transition:
-    opacity 0.35s ease,
-    transform 0.35s ease,
-    visibility 0s linear 0.35s;
+  transition: visibility 0s linear 0.45s;
 }
 
-.chapter.is_card_open .room_dim,
-.chapter.is_card_open .card {
+.chapter.is_card_open .room_dim {
   opacity: 1;
   visibility: visible;
   transition:
     opacity 0.35s ease,
-    transform 0.35s ease,
     visibility 0s linear 0s;
 }
 
 .chapter.is_card_open .card {
-  transform: scale(1);
+  opacity: 1;
+  visibility: visible;
+  transition: visibility 0s linear 0s;
+}
+
+/* закрываем: комната светлеет, пока карточка летит обратно */
+.chapter.is_card_closing .room_dim {
+  opacity: 0;
+}
+
+/* предмет, из которого «вылетела» карточка, пока она открыта,
+   стоит в комнате бледным следом */
+.chapter.is_card_open .item.is_out {
+  opacity: 0.25;
+  transition: opacity 0.4s ease;
 }
 
 /* иконка в карточке светится */
@@ -1331,14 +1344,4 @@ html.has_room_cursor * {
   .item.is_crash .cube {
     animation: none;
   }
-}
-
-/* карточка, которую подняли, чтобы она не вылезала за экран,
-   плавно едет вверх */
-.chapter.is_card_open .card.is_lifted {
-  transition:
-    opacity 0.35s ease,
-    transform 0.35s ease,
-    top 0.5s ease,
-    visibility 0s linear 0s;
 }

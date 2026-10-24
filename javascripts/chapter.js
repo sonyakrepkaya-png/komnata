@@ -2,8 +2,9 @@
 // ГЛАВЫ: КАРТОЧКИ ПРЕДМЕТОВ
 //
 // Наведение на предмет — он загорается (это делает style.css).
-// Нажатие — на месте рамки предмета открывается светящаяся
-// карточка с его историей, а комната затемняется.
+// Нажатие — карточка с историей предмета «поднимается» из его
+// рамки и встаёт по центру экрана, как модальное окно; комната
+// затемняется. При закрытии карточка улетает обратно в предмет.
 // Закрыть: кнопка «—», клик мимо карточки или клавиша Esc.
 //
 // Текст карточки берётся из data-card у кнопки предмета
@@ -11,8 +12,9 @@
 // ============================================================
 
 (function () {
-  const ROOM_RIGHT = 1329; // правая стена комнаты, px макета
-  const CARD_W = 403; // ширина карточки, px макета
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const OPEN_MS = 520; // как долго карточка вылетает из предмета
+  const CLOSE_MS = 380; // как долго улетает обратно
 
   // «Живые» иконки: у каждого предмета своё движение
   // (сами движения описаны в style.css, раздел «живые иконки»).
@@ -72,31 +74,70 @@
       icon.innerHTML = srcIcon.innerHTML;
       icon.dataset.anim = animOf(item);
 
-      // место: левый верхний угол рамки предмета,
-      // но так, чтобы карточка не вылезала за правую стену
-      const k = stage.clientWidth / 1440; // px экрана в 1 px макета
-      let left = item.offsetLeft / k + 4;
-      const top = item.offsetTop / k + 4;
-      if (left + CARD_W > ROOM_RIGHT) left = ROOM_RIGHT - CARD_W;
-      card.style.left = left / 14.4 + "cqw";
-      card.style.top = top / 14.4 + "cqw";
-
-      chapter.classList.add("is_card_open");
-      openedFrom = item;
-      closeBtn.focus({ preventScroll: true });
       // room_fx.js по этому событию прячет в карточку секрет
+      // (до полёта, чтобы размер карточки был уже окончательный)
       window.dispatchEvent(
         new CustomEvent("card-open", {
           detail: { chapter: chapter, item: item, card: card },
         }),
       );
+      chapter.classList.remove("is_card_closing");
+      chapter.classList.add("is_card_open");
+      item.classList.add("is_out");
+      fly(item, true);
+      openedFrom = item;
+      closeBtn.focus({ preventScroll: true });
+    }
+
+    // Карточка летит между рамкой предмета и центром экрана.
+    // Считаем, на сколько сдвинуть и уменьшить карточку, чтобы она
+    // совпала с рамкой предмета, и анимируем от/до этого положения.
+    function fly(item, opening) {
+      if (card._anim) card._anim.cancel();
+      const c = card.getBoundingClientRect();
+      const r = item.querySelector(".item_box").getBoundingClientRect();
+      const dx = r.left + r.width / 2 - (c.left + c.width / 2);
+      const dy = r.top + r.height / 2 - (c.top + c.height / 2);
+      const s = Math.max(0.2, Math.min(1, r.width / c.width));
+      const away =
+        "translate(-50%, -50%) translate(" + dx + "px, " + dy + "px) scale(" + s + ")";
+      const home = "translate(-50%, -50%)";
+      const frames = [
+        { transform: away, opacity: 0 },
+        { transform: home, opacity: 1 },
+      ];
+      if (reduce) {
+        card._anim = null;
+        return;
+      }
+      card._anim = card.animate(opening ? frames : frames.reverse(), {
+        duration: opening ? OPEN_MS : CLOSE_MS,
+        easing: opening ? "cubic-bezier(0.2, 0.8, 0.2, 1)" : "cubic-bezier(0.5, 0, 0.75, 0.3)",
+        fill: "forwards",
+      });
+      return card._anim;
     }
 
     function close() {
       if (!chapter.classList.contains("is_card_open")) return;
-      chapter.classList.remove("is_card_open");
-      if (openedFrom) openedFrom.focus({ preventScroll: true });
+      const from = openedFrom;
       openedFrom = null;
+      const done = function () {
+        chapter.classList.remove("is_card_open");
+        if (from) from.classList.remove("is_out");
+      };
+      const a = from ? fly(from, false) : null;
+      if (a) {
+        // комната светлеет одновременно с полётом карточки
+        chapter.classList.add("is_card_closing");
+        a.onfinish = function () {
+          chapter.classList.remove("is_card_closing");
+          done();
+        };
+      } else {
+        done();
+      }
+      if (from) from.focus({ preventScroll: true });
     }
 
     chapter.querySelectorAll(".item").forEach(function (item) {

@@ -32,6 +32,13 @@
     "Цветочек": "grow",
   };
 
+  // во сколько раз увеличить иконку в карточке
+  // (кубики широкие, поэтому чуть меньше, чтобы на глаз
+  //  были одного размера с остальными)
+  const ICON_ZOOM = {
+    "Кубики": 0.88,
+  };
+
   function animOf(item) {
     return ANIM[item.querySelector(".item_label").textContent.trim()] || "";
   }
@@ -67,9 +74,14 @@
       text.textContent = item.dataset.card;
       const srcIcon = item.querySelector(".item_icon");
       const box = srcIcon.getBBox();
+      // некоторые иконки в карточке крупнее (рамка видимой области
+      // меньше — значит, рисунок больше)
+      const z = ICON_ZOOM[item.querySelector(".item_label").textContent.trim()] || 1;
+      const w = box.width / z;
+      const h = box.height / z;
       icon.setAttribute(
         "viewBox",
-        box.x + " " + box.y + " " + box.width + " " + box.height,
+        box.x + (box.width - w) / 2 + " " + (box.y + (box.height - h) / 2) + " " + w + " " + h,
       );
       icon.innerHTML = srcIcon.innerHTML;
       icon.dataset.anim = animOf(item);
